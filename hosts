@@ -1,0 +1,12 @@
+[controller]
+10.0.10.215 ansible_connection=local
+
+[testing]
+10.0.10.218
+
+[workers]
+10.0.10.216
+10.0.10.217
+
+[proxmox]
+10.0.10.205

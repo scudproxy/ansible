@@ -1,0 +1,38 @@
+---
+- hosts: all
+  become: true
+
+  tasks:
+    - name: Check if ipv6 is disabled in kernel
+      shell: grep GRUB_CMDLINE_LINUX /etc/default/grub | grep -c "ipv6.disable=1"
+      register: cgroup_status
+      ignore_errors: true
+
+    - name: Add ipv6 disable option
+      lineinfile: dest="/etc/default/grub" 
+        regexp='GRUB_CMDLINE_LINUX="(.*)"' 
+        line='GRUB_CMDLINE_LINUX="\1 ipv6.disable=1"' 
+        backrefs=yes
+      when: cgroup_status.stdout == "0"
+
+    - name: update-grub
+      shell: update-grub2
+      when: cgroup_status.stdout == "0"
+
+    - name: reboot if we need it
+      shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+      async: 1 
+      poll: 0
+      ignore_errors: true
+      when: cgroup_status.stdout == "0"
+
+    - name: Wait for the reboot and reconnect 
+      wait_for_connection:
+        connect_timeout: 10
+        sleep: 5
+        delay: 5
+        timeout: 300
+
+    - name: Check the Uptime of the servers
+      shell: "uptime"
+      register: Uptime

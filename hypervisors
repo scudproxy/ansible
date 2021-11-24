@@ -1,0 +1,9 @@
+
+
+[controller]
+10.0.10.215 ansible_connection=local
+
+[proxmox]
+10.0.10.205
+10.0.10.206
+10.0.10.207
